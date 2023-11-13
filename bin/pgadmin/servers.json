@@ -1,0 +1,15 @@
+{
+    "Servers": {
+        "1": {
+            "Name": "test1",
+            "Group": "Servers",
+            "Port": 5432,
+            "Username": "admin",
+            "Host": "db",
+            "SSLMode": "prefer",
+            "MaintenanceDB": "postgres",
+			"BGColor": "#ff9900",
+            "FGColor": "#000000"
+        }
+    }
+}

@@ -1,0 +1,103 @@
+version: '3'
+
+services:
+  app:
+    build:
+      context: .
+    container_name: app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    volumes:
+      - ./target/ETL-Parser-0.0.1-SNAPSHOT.jar:/app/app.jar
+    networks:
+      - backend
+  db:
+    image: 'postgres:13.1-alpine'
+    container_name: db
+    ports:
+      - "16003:5432"
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=123
+      - POSTGRES_DB=postgres
+    volumes:
+      - postgres:/var/lib/postgresql/data
+      - ./database/postgres/init-database.sh:/docker-entrypoint-initdb.d/init-database.sh
+      - ./database/postgres/init_sql:/init_sql
+    networks:
+      - backend
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    ports:
+      - "16002:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: danielerusso_@hotmail.it
+      PGADMIN_DEFAULT_PASSWORD: 123
+    volumes:
+      - ./pgadmin/servers.json:/pgadmin4/servers.json
+    networks:
+      - backend
+    depends_on:
+      - db
+
+#  mypersonalsql:
+ #   image: mysql:latest
+  #  restart: always
+   # environment:
+#      MYSQL_DATABASE: 'hive'
+ #     # So you don't have to use root, but you can if you like
+  #    MYSQL_USER: 'admin'
+   #   # You can use whatever password you like
+    #  MYSQL_PASSWORD: 'root'
+#      # Password for root access
+ #     MYSQL_ROOT_PASSWORD: 'root'
+  #  ports:
+   #   # <Port exposed> : <MySQL Port running inside container>
+    #  - '3306:3306'
+#    expose:
+ #     # Opens port 3306 on the container
+  #    - '3306'
+   #   # Where our data will be persisted
+    #volumes:
+#      - my-db:/var/lib/mysql
+
+
+  kylin:
+    container_name: kylin
+    image: apachekylin/apache-kylin-standalone:5.0-beta
+    ports:
+      - "7070:7070"
+      - "8088:8088"
+      - "9870:9870"
+      - "8032:8032"
+      - "8042:8042"
+      - "2181:2181"
+      - "3306:3306"
+    expose:
+      - "3306"
+    command: -Dkylin.config=./kylin/config/kylin.properties
+    environment:
+      - JDBC_URL='jdbc:postgresql://localhost:5432/postgres'
+      - JDBC_USER=admin
+      - JDBC_PASSWORD=123
+      - KYLIN_CONF_HOME=/home/kylin/apache-kylin-5.0.0-beta-bin/conf
+    networks:
+      - backend
+    volumes:
+      - ./kylin/conf/kylin.properties:/home/kylin/apache-kylin-5.0.0-beta-bin/conf/kylin.properties
+      - ./kylin/lib/ext/postgresql-42.6.0.jar:/home/kylin/apache-kylin-5.0.0-beta-bin/lib/ext/postgresql-42.6.0.jar
+      #- ./kylin/conf/datasource/POSTGRESQL.xml:/home/kylin/apache-kylin-5.0.0-beta-bin/conf/datasource/POSTGRESQL.xml
+    links:
+      - db
+
+
+networks:
+  backend:
+    driver: bridge
+volumes:
+  postgres:
+#  my-db:
+

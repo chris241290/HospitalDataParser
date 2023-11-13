@@ -1,0 +1,53 @@
+version: '3'
+services:   
+  postgres-database:
+    image: postgis/postgis:12-3.1-alpine
+    container_name: ms-postgres-database
+    environment: 
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ms-pgsqldb:/var/lib/postgresql/data
+      - ./database/postgres/init-database.sh:/docker-entrypoint-initdb.d/init-database.sh
+      - ./database/postgres/init_sql:/init_sql
+    ports:
+      - "13000:5432"
+    networks:
+      - ms-network      
+  ms-pgadmin:
+    image: dpage/pgadmin4:6.8
+    container_name: ms-pgadmin
+    ports:
+      - "13001:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+    volumes:
+      - ./pgadmin/servers.json:/pgadmin4/servers.json
+    networks:
+      - ms-network
+    depends_on:
+      - postgres-database
+  ms-kylin:
+    container_name: kylin
+    image: apachekylin/apache-kylin-standalone:4.0.0
+    ports:
+      - "7070:7070"
+      - "8088:8088"
+      - "50070:50070"
+      - "8032:8032"
+      - "8042:8042"
+      - "2181:2181"
+    environment:
+      - JDBC_URL='jdbc:postgresql://ms-postgres-database:5432/kylin'
+      - JDBC_USER=${DB_POSTGRES_USERNAME}
+      - JDBC_PASSWORD=${DB_POSTGRES_PWD}
+    volumes:
+      - ms-kylin:/app/kylin_home
+    networks:
+      - ms-network
+networks:
+  ms-network:
+    driver: bridge
+volumes:
+  ms-pgsqldb:
+  ms-kylin:

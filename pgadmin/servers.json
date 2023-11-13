@@ -1,0 +1,15 @@
+{
+    "Servers": {
+        "1": {
+            "Name": "Olap",
+            "Group": "Servers",
+            "Port": 5432,
+            "Username": "postgres",
+            "Host": "postgres-database",
+            "SSLMode": "prefer",
+            "MaintenanceDB": "postgres",
+			"BGColor": "#ff9900",
+            "FGColor": "#000000"
+        }
+    }
+}
